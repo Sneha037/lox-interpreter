@@ -16,6 +16,9 @@ ways of running code.
 public class Lox
 {
     static boolean hadError = false;
+    static boolean hadRuntimeerror = false;
+
+    private static final Interpreter interpreter = new Interpreter();
 
       public static void main(String[] args) throws IOException
       {
@@ -73,10 +76,18 @@ public class Lox
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expr = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if(hadError)
-            return;
+        {
+            System.exit(65);
+        }
+
+        if(hadRuntimeerror)
+            System.exit(70);
+            //return;
+
+        interpreter.interpret(statements);
 
        // System.out.println(new AstPrinter().print(expr));
 
@@ -118,6 +129,12 @@ public class Lox
     {
         System.err.println("[line " + line + "] Error "+ where + ": " + message);
         hadError = true;
+    }
+
+    static void runtimeError(RuntimeError error)
+    {
+        System.err.println(error.getMessage() + "\n[line " + error.token.line + "]");
+        hadRuntimeerror = true;
     }
 
     /*
